@@ -21,6 +21,8 @@
 #ifndef PHP_PSSH_H
 #define PHP_PSSH_H
 
+#define PHP_PSSH_VERSION "0.0.1"
+
 extern zend_module_entry pssh_module_entry;
 #define phpext_pssh_ptr &pssh_module_entry
 
