@@ -693,7 +693,15 @@ PHP_MINFO_FUNCTION(pssh)
 }
 /* }}} */
 
+#if defined(PHP_VERSION_ID) && PHP_VERSION_ID > 50000
+ZEND_BEGIN_ARG_INFO(a3_arg_force_ref, 3)
+	 ZEND_ARG_PASS_INFO(0)
+	 ZEND_ARG_PASS_INFO(1)
+	 ZEND_ARG_PASS_INFO(0)
+ZEND_END_ARG_INFO();
+#else
 static unsigned char a3_arg_force_ref[] = { 3, BYREF_NONE, BYREF_FORCE, BYREF_NONE };
+#endif
 
 /* {{{ pssh_functions[]
  */
