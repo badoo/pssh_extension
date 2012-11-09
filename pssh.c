@@ -350,7 +350,7 @@ static PHP_FUNCTION(pssh_tasklist_free)
 }
 /* }}} */
 
-/* {{{ proto bool pssh_copy_to_server(resource tasklist, string server, string local_file, string remote_file) */
+/* {{{ proto bool pssh_copy_to_server(resource tasklist, string server, string local_file, string remote_file[, int timeout]) */
 static PHP_FUNCTION(pssh_copy_to_server)
 {
 	zval *ztl;
@@ -358,17 +358,18 @@ static PHP_FUNCTION(pssh_copy_to_server)
 	int ret;
 	char *server, *local_file, *remote_file;
 	int server_len, local_file_len, remote_file_len;
+	long timeout = 0;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rsss", &ztl, 
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rsss|l", &ztl, 
 																 &server, &server_len, 
 																 &local_file, &local_file_len,
-																 &remote_file, &remote_file_len) != SUCCESS) {
+																 &remote_file, &remote_file_len, &timeout) != SUCCESS) {
 		return;
 	}
 
 	PHP_ZVAL_TO_TASKLIST(ztl, tl);
 
-	ret = pssh_cp_to_server(tl->tl, server, local_file, remote_file);
+	ret = pssh_cp_to_server(tl->tl, server, local_file, remote_file, timeout);
 	if (ret != 0) {
 		RETURN_FALSE;
 	}
@@ -376,7 +377,7 @@ static PHP_FUNCTION(pssh_copy_to_server)
 }
 /* }}} */
 
-/* {{{ proto bool pssh_copy_from_server(resource tasklist, string server, string remote_file, string local_file) */
+/* {{{ proto bool pssh_copy_from_server(resource tasklist, string server, string remote_file, string local_file[, int timeout]) */
 static PHP_FUNCTION(pssh_copy_from_server)
 {
 	zval *ztl;
@@ -384,17 +385,18 @@ static PHP_FUNCTION(pssh_copy_from_server)
 	int ret;
 	char *server, *local_file, *remote_file;
 	int server_len, local_file_len, remote_file_len;
+	long timeout = 0;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rsss", &ztl, 
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rsss|l", &ztl, 
 																 &server, &server_len, 
 																 &remote_file, &remote_file_len,
-																 &local_file, &local_file_len) != SUCCESS) {
+																 &local_file, &local_file_len, &timeout) != SUCCESS) {
 		return;
 	}
 
 	PHP_ZVAL_TO_TASKLIST(ztl, tl);
 
-	ret = pssh_cp_from_server(tl->tl, server, local_file, remote_file);
+	ret = pssh_cp_from_server(tl->tl, server, local_file, remote_file, timeout);
 	if (ret != 0) {
 		RETURN_FALSE;
 	}
@@ -402,7 +404,7 @@ static PHP_FUNCTION(pssh_copy_from_server)
 }
 /* }}} */
 
-/* {{{ proto bool pssh_tasklist_add(resource tasklist, string server, string cmd) */
+/* {{{ proto bool pssh_tasklist_add(resource tasklist, string server, string cmd[, int timeout]) */
 static PHP_FUNCTION(pssh_tasklist_add)
 {
 	zval *ztl;
@@ -410,16 +412,17 @@ static PHP_FUNCTION(pssh_tasklist_add)
 	int ret;
 	char *server, *cmd;
 	int server_len, cmd_len;
+	long timeout = 0;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rss", &ztl, 
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rss|l", &ztl, 
 																 &server, &server_len, 
-																 &cmd, &cmd_len) != SUCCESS) {
+																 &cmd, &cmd_len, &timeout) != SUCCESS) {
 		return;
 	}
 
 	PHP_ZVAL_TO_TASKLIST(ztl, tl);
 
-	ret = pssh_add_cmd(tl->tl, server, cmd);
+	ret = pssh_add_cmd(tl->tl, server, cmd, timeout);
 	if (ret != 0) {
 		RETURN_FALSE;
 	}
@@ -427,22 +430,21 @@ static PHP_FUNCTION(pssh_tasklist_add)
 }
 /* }}} */
 
-/* {{{ proto int pssh_tasklist_exec(resource tasklist, int timeout) */
+/* {{{ proto int pssh_tasklist_exec(resource tasklist, straing &server_name) */
 static PHP_FUNCTION(pssh_tasklist_exec)
 {
 	zval *ztl, *server_name;
 	php_pssh_tasklist *tl;
 	struct pssh_task_t *task = NULL;
 	int ret;
-	long timeout;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rzl", &ztl, &server_name, &timeout) != SUCCESS) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rz", &ztl, &server_name) != SUCCESS) {
 		return;
 	}
 
 	PHP_ZVAL_TO_TASKLIST(ztl, tl);
 
-	ret = pssh_exec(tl->tl, &task, (int)timeout);
+	ret = pssh_exec(tl->tl, &task);
 	zval_dtor(server_name);
 	if (task) {
 		ZVAL_STRING(server_name, pssh_task_server_name(task), 1);
@@ -693,7 +695,24 @@ PHP_MINFO_FUNCTION(pssh)
 }
 /* }}} */
 
+#if defined(PHP_VERSION_ID) && PHP_VERSION_ID > 50000
+ZEND_BEGIN_ARG_INFO(a3_arg_force_ref, 3)
+	 ZEND_ARG_PASS_INFO(0)
+	 ZEND_ARG_PASS_INFO(1)
+	 ZEND_ARG_PASS_INFO(0)
+ZEND_END_ARG_INFO();
+#else
 static unsigned char a3_arg_force_ref[] = { 3, BYREF_NONE, BYREF_FORCE, BYREF_NONE };
+#endif
+
+#if defined(PHP_VERSION_ID) && PHP_VERSION_ID > 50000
+ZEND_BEGIN_ARG_INFO(a2_arg_force_ref, 2)
+	 ZEND_ARG_PASS_INFO(0)
+	 ZEND_ARG_PASS_INFO(1)
+ZEND_END_ARG_INFO();
+#else
+static unsigned char a2_arg_force_ref[] = { 2, BYREF_NONE, BYREF_FORCE };
+#endif
 
 /* {{{ pssh_functions[]
  */
@@ -711,7 +730,7 @@ zend_function_entry pssh_functions[] = {
 	PHP_FE(pssh_copy_to_server,	NULL)
 	PHP_FE(pssh_copy_from_server,	NULL)
 	PHP_FE(pssh_tasklist_add,	NULL)
-	PHP_FE(pssh_tasklist_exec,	a3_arg_force_ref)
+	PHP_FE(pssh_tasklist_exec,	a2_arg_force_ref)
 	PHP_FE(pssh_tasklist_first,	NULL)
 	PHP_FE(pssh_tasklist_next,	NULL)
 	PHP_FE(pssh_task_server_name,	NULL)
