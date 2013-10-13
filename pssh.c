@@ -368,7 +368,7 @@ static PHP_FUNCTION(pssh_copy_to_server)
 
 	PHP_ZVAL_TO_TASKLIST(ztl, tl);
 
-	ret = pssh_cp_to_server(tl->tl, server, local_file, remote_file);
+	ret = pssh_cp_to_server(tl->tl, server, local_file, remote_file, 15);
 	if (ret != 0) {
 		RETURN_FALSE;
 	}
@@ -394,7 +394,7 @@ static PHP_FUNCTION(pssh_copy_from_server)
 
 	PHP_ZVAL_TO_TASKLIST(ztl, tl);
 
-	ret = pssh_cp_from_server(tl->tl, server, local_file, remote_file);
+	ret = pssh_cp_from_server(tl->tl, server, local_file, remote_file, 15);
 	if (ret != 0) {
 		RETURN_FALSE;
 	}
@@ -419,7 +419,7 @@ static PHP_FUNCTION(pssh_tasklist_add)
 
 	PHP_ZVAL_TO_TASKLIST(ztl, tl);
 
-	ret = pssh_add_cmd(tl->tl, server, cmd);
+	ret = pssh_add_cmd(tl->tl, server, cmd, 15);
 	if (ret != 0) {
 		RETURN_FALSE;
 	}
@@ -442,7 +442,7 @@ static PHP_FUNCTION(pssh_tasklist_exec)
 
 	PHP_ZVAL_TO_TASKLIST(ztl, tl);
 
-	ret = pssh_exec(tl->tl, &task, (int)timeout);
+	ret = pssh_exec(tl->tl, &task);
 	zval_dtor(server_name);
 	if (task) {
 		ZVAL_STRING(server_name, pssh_task_server_name(task), 1);
