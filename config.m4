@@ -44,7 +44,7 @@ if test "$PHP_PSSH" != "no"; then
   ],[
     AC_MSG_ERROR([invalid libpssh version or libpssh not found, see more details in config.log])
   ],[
-    -L$PSSH_DIR/$PSSH_LIBDIR -ldl
+    -L$PSSH_DIR/$PSSH_LIBDIR -lpssh
   ])
 
   PHP_SUBST(PSSH_SHARED_LIBADD)

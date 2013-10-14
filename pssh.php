@@ -1,14 +1,15 @@
 <?php
 
-$servers = array("<server1>", "<server2>");
-$user = "<user>";
-$public_key = "<key.pub>";
-$remote_file = "<remote file>";
-$local_file = "<local file>";
+$servers = array("62.109.17.46", "www.bsdway.ru", "www.bsdway.ru", "www.bsdway.ru");
+$user = "vagner";
+$public_key = "/home/vagner/.ssh/bsdway/bsdway.ru.pub";
+$private_key = "/home/vagner/.ssh/bsdway/bsdway.ru";
+$remote_file = "/tmp/bsdway.ru.pub";
+$local_file = "/home/vagner/.ssh/bsdway/bsdway.ru.pub";
 
-$r = pssh_init($user, $public_key);
+$r = pssh_init($user, $public_key, $private_key);
 
-foreach ($server as $server) {
+foreach ($servers as $server) {
 	pssh_server_add($r, $server);
 }
 
