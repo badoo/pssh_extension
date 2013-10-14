@@ -358,17 +358,18 @@ static PHP_FUNCTION(pssh_copy_to_server)
 	int ret;
 	char *server, *local_file, *remote_file;
 	int server_len, local_file_len, remote_file_len;
+	long timeout;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rsss", &ztl, 
 																 &server, &server_len, 
 																 &local_file, &local_file_len,
-																 &remote_file, &remote_file_len) != SUCCESS) {
+																 &remote_file, &remote_file_len, &timeout) != SUCCESS) {
 		return;
 	}
 
 	PHP_ZVAL_TO_TASKLIST(ztl, tl);
 
-	ret = pssh_cp_to_server(tl->tl, server, local_file, remote_file, 15);
+	ret = pssh_cp_to_server(tl->tl, server, local_file, remote_file, (int)timeout);
 	if (ret != 0) {
 		RETURN_FALSE;
 	}
@@ -384,17 +385,18 @@ static PHP_FUNCTION(pssh_copy_from_server)
 	int ret;
 	char *server, *local_file, *remote_file;
 	int server_len, local_file_len, remote_file_len;
+	long timeout;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rsss", &ztl, 
 																 &server, &server_len, 
 																 &remote_file, &remote_file_len,
-																 &local_file, &local_file_len) != SUCCESS) {
+																 &local_file, &local_file_len, &timeout) != SUCCESS) {
 		return;
 	}
 
 	PHP_ZVAL_TO_TASKLIST(ztl, tl);
 
-	ret = pssh_cp_from_server(tl->tl, server, local_file, remote_file, 15);
+	ret = pssh_cp_from_server(tl->tl, server, local_file, remote_file, (int)timeout);
 	if (ret != 0) {
 		RETURN_FALSE;
 	}
@@ -410,16 +412,17 @@ static PHP_FUNCTION(pssh_tasklist_add)
 	int ret;
 	char *server, *cmd;
 	int server_len, cmd_len;
+	long timeout;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rss", &ztl, 
 																 &server, &server_len, 
-																 &cmd, &cmd_len) != SUCCESS) {
+																 &cmd, &cmd_len, &timeout) != SUCCESS) {
 		return;
 	}
 
 	PHP_ZVAL_TO_TASKLIST(ztl, tl);
 
-	ret = pssh_add_cmd(tl->tl, server, cmd, 15);
+	ret = pssh_add_cmd(tl->tl, server, cmd, (int)timeout);
 	if (ret != 0) {
 		RETURN_FALSE;
 	}
